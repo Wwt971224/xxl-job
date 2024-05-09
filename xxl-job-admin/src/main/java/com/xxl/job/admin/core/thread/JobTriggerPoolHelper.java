@@ -3,9 +3,12 @@ package com.xxl.job.admin.core.thread;
 import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.trigger.XxlJobTrigger;
+import jodd.util.StringUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
+import java.util.UUID;
 import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -74,6 +77,19 @@ public class JobTriggerPoolHelper {
                            final int failRetryCount,
                            final String executorShardingParam,
                            final String executorParam,
+                           final String addressList){
+        addTrigger(UUID.randomUUID().toString(), jobId, triggerType, failRetryCount, executorShardingParam, executorParam, addressList);
+    }
+
+    /**
+     * add trigger
+     */
+    public void addTrigger(final String batchId,
+                           final int jobId,
+                           final TriggerTypeEnum triggerType,
+                           final int failRetryCount,
+                           final String executorShardingParam,
+                           final String executorParam,
                            final String addressList) {
 
         // choose thread pool
@@ -92,7 +108,7 @@ public class JobTriggerPoolHelper {
 
                 try {
                     // do trigger
-                    XxlJobTrigger.trigger(jobId, triggerType, failRetryCount, executorShardingParam, executorParam, addressList);
+                    XxlJobTrigger.trigger(batchId, jobId, triggerType, failRetryCount, executorShardingParam, executorParam, addressList);
                 } catch (Exception e) {
                     logger.error(e.getMessage(), e);
                 } finally {
@@ -145,6 +161,10 @@ public class JobTriggerPoolHelper {
      */
     public static void trigger(int jobId, TriggerTypeEnum triggerType, int failRetryCount, String executorShardingParam, String executorParam, String addressList) {
         helper.addTrigger(jobId, triggerType, failRetryCount, executorShardingParam, executorParam, addressList);
+    }
+
+    public static void trigger(String batchId, int jobId, TriggerTypeEnum triggerType, int failRetryCount, String executorShardingParam, String executorParam, String addressList) {
+        helper.addTrigger(batchId, jobId, triggerType, failRetryCount, executorShardingParam, executorParam, addressList);
     }
 
 }

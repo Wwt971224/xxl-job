@@ -32,6 +32,7 @@
 
 		<mybatis-spring-boot-starter.version>2.3.0</mybatis-spring-boot-starter.version>
 		<mysql-connector-j.version>8.0.32</mysql-connector-j.version>
+		<redisson.version>3.17.7</redisson.version>
 
 		<slf4j-api.version>1.7.36</slf4j-api.version>
 		<junit-jupiter.version>5.9.2</junit-jupiter.version>

@@ -16,6 +16,7 @@ public class TriggerParam implements Serializable{
     private int executorTimeout;
 
     private long logId;
+    private String batchId;
     private long logDateTime;
 
     private String glueType;
@@ -141,4 +142,11 @@ public class TriggerParam implements Serializable{
                 '}';
     }
 
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
 }

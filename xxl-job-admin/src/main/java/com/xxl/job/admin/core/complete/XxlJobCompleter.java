@@ -3,6 +3,7 @@ package com.xxl.job.admin.core.complete;
 import com.xxl.job.admin.core.conf.XxlJobAdminConfig;
 import com.xxl.job.admin.core.model.XxlJobInfo;
 import com.xxl.job.admin.core.model.XxlJobLog;
+import com.xxl.job.admin.core.route.ExecutorRouteStrategyEnum;
 import com.xxl.job.admin.core.thread.JobTriggerPoolHelper;
 import com.xxl.job.admin.core.trigger.TriggerTypeEnum;
 import com.xxl.job.admin.core.util.I18nUtil;
@@ -50,28 +51,41 @@ public class XxlJobCompleter {
         if (XxlJobContext.HANDLE_CODE_SUCCESS == xxlJobLog.getHandleCode()) {
             XxlJobInfo xxlJobInfo = XxlJobAdminConfig.getAdminConfig().getXxlJobInfoDao().loadById(xxlJobLog.getJobId());
             if (xxlJobInfo!=null && xxlJobInfo.getChildJobId()!=null && xxlJobInfo.getChildJobId().trim().length()>0) {
-                triggerChildMsg = "<br><br><span style=\"color:#00c0ef;\" > >>>>>>>>>>>"+ I18nUtil.getString("jobconf_trigger_child_run") +"<<<<<<<<<<< </span><br>";
-
-                String[] childJobIds = xxlJobInfo.getChildJobId().split(",");
-                for (int i = 0; i < childJobIds.length; i++) {
-                    int childJobId = (childJobIds[i]!=null && childJobIds[i].trim().length()>0 && isNumeric(childJobIds[i]))?Integer.valueOf(childJobIds[i]):-1;
-                    if (childJobId > 0) {
-
-                        JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, null, null);
-                        ReturnT<String> triggerChildResult = ReturnT.SUCCESS;
-
-                        // add msg
-                        triggerChildMsg += MessageFormat.format(I18nUtil.getString("jobconf_callback_child_msg1"),
-                                (i+1),
-                                childJobIds.length,
-                                childJobIds[i],
-                                (triggerChildResult.getCode()==ReturnT.SUCCESS_CODE?I18nUtil.getString("system_success"):I18nUtil.getString("system_fail")),
-                                triggerChildResult.getMsg());
+                boolean childPermission = true;
+                // 判断同一个batchId的分片父任务是否执行完成
+                if (ExecutorRouteStrategyEnum.SHARDING_BROADCAST == ExecutorRouteStrategyEnum.match(xxlJobInfo.getExecutorRouteStrategy(), null)) {
+                    long successCount = XxlJobAdminConfig.getAdminConfig().getRecordService().recordSuccessCount(xxlJobLog.getBatchId(), xxlJobLog.getJobId());
+                    long totalCount = XxlJobAdminConfig.getAdminConfig().getRecordService().getTotalCount(xxlJobLog.getBatchId(), xxlJobLog.getJobId());
+                    if (successCount == totalCount) {
+                        XxlJobAdminConfig.getAdminConfig().getRecordService().clear(xxlJobLog.getBatchId(), xxlJobLog.getJobId());
                     } else {
-                        triggerChildMsg += MessageFormat.format(I18nUtil.getString("jobconf_callback_child_msg2"),
-                                (i+1),
-                                childJobIds.length,
-                                childJobIds[i]);
+                        childPermission = false;
+                    }
+                }
+                if (childPermission) {
+                    triggerChildMsg = "<br><br><span style=\"color:#00c0ef;\" > >>>>>>>>>>>" + I18nUtil.getString("jobconf_trigger_child_run") + "<<<<<<<<<<< </span><br>";
+
+                    String[] childJobIds = xxlJobInfo.getChildJobId().split(",");
+                    for (int i = 0; i < childJobIds.length; i++) {
+                        int childJobId = (childJobIds[i] != null && childJobIds[i].trim().length() > 0 && isNumeric(childJobIds[i])) ? Integer.valueOf(childJobIds[i]) : -1;
+                        if (childJobId > 0) {
+
+                            JobTriggerPoolHelper.trigger(childJobId, TriggerTypeEnum.PARENT, -1, null, null, null);
+                            ReturnT<String> triggerChildResult = ReturnT.SUCCESS;
+
+                            // add msg
+                            triggerChildMsg += MessageFormat.format(I18nUtil.getString("jobconf_callback_child_msg1"),
+                                    (i + 1),
+                                    childJobIds.length,
+                                    childJobIds[i],
+                                    (triggerChildResult.getCode() == ReturnT.SUCCESS_CODE ? I18nUtil.getString("system_success") : I18nUtil.getString("system_fail")),
+                                    triggerChildResult.getMsg());
+                        } else {
+                            triggerChildMsg += MessageFormat.format(I18nUtil.getString("jobconf_callback_child_msg2"),
+                                    (i + 1),
+                                    childJobIds.length,
+                                    childJobIds[i]);
+                        }
                     }
                 }
 

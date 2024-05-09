@@ -209,6 +209,7 @@ public class JobThread extends Thread{
                         // commonm
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
                         		triggerParam.getLogId(),
+								triggerParam.getBatchId(),
 								triggerParam.getLogDateTime(),
 								XxlJobContext.getXxlJobContext().getHandleCode(),
 								XxlJobContext.getXxlJobContext().getHandleMsg() )
@@ -217,6 +218,7 @@ public class JobThread extends Thread{
                         // is killed
                         TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
                         		triggerParam.getLogId(),
+								triggerParam.getBatchId(),
 								triggerParam.getLogDateTime(),
 								XxlJobContext.HANDLE_CODE_FAIL,
 								stopReason + " [job running, killed]" )
@@ -233,6 +235,7 @@ public class JobThread extends Thread{
 				// is killed
 				TriggerCallbackThread.pushCallBack(new HandleCallbackParam(
 						triggerParam.getLogId(),
+						triggerParam.getBatchId(),
 						triggerParam.getLogDateTime(),
 						XxlJobContext.HANDLE_CODE_FAIL,
 						stopReason + " [job not executed, in the job queue, killed.]")

@@ -9,14 +9,16 @@ public class HandleCallbackParam implements Serializable {
     private static final long serialVersionUID = 42L;
 
     private long logId;
+    private String batchId;
     private long logDateTim;
 
     private int handleCode;
     private String handleMsg;
 
     public HandleCallbackParam(){}
-    public HandleCallbackParam(long logId, long logDateTim, int handleCode, String handleMsg) {
+    public HandleCallbackParam(long logId, String batchId, long logDateTim, int handleCode, String handleMsg) {
         this.logId = logId;
+        this.batchId = batchId;
         this.logDateTim = logDateTim;
         this.handleCode = handleCode;
         this.handleMsg = handleMsg;
@@ -64,4 +66,11 @@ public class HandleCallbackParam implements Serializable {
                 '}';
     }
 
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
+    }
 }
